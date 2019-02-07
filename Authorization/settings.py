@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+import ldap
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -125,6 +126,27 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-import ldap
-from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
+TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
+STATICFILE_DIR = os.path.join(BASE_DIR, "static")
 
+# L = ldap.initialize('ldap://userdb.vlabs.knu.ua:389')
+# username = "cn=Manager,dc=kiev,dc=ua"
+# password = "12userdb3"
+
+def ldap_initialize(remote, port, user, password, use_ssl=False, timeout=None):
+    prefix = 'ldap'
+    if use_ssl is True:
+        prefix = 'ldaps'
+        # ask ldap to ignore certificate errors
+        ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
+
+    if timeout:
+        ldap.set_option(ldap.OPT_NETWORK_TIMEOUT, timeout)
+
+    ldap.set_option(ldap.OPT_REFERRALS, ldap.OPT_OFF)
+    server = prefix + '://' + remote + ':' + '%s' % port
+    L = ldap.initialize(server)
+    L.simple_bind_s(user, password)
+
+
+ldap_initialize("userdb.vlabs.knu.ua", 389, "cn=Manager,dc=kiev,dc=ua", "12userdb3")
